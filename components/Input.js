@@ -1,4 +1,4 @@
-const Input = ({ label, value, onChange }) => {
+const Input = ({ label, ...props }) => {
   return (
     <div className="flex flex-col mb-4">
       {label && (
@@ -9,10 +9,10 @@ const Input = ({ label, value, onChange }) => {
       <input
         id="inputField"
         type="text"
-        value={value}
-        onChange={onChange}
-        placeholder="Enter your text here"
+        placeholder="Enter something"
         className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        label={label}
+        {...props}
       />
     </div>
   );

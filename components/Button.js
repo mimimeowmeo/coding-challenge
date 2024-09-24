@@ -1,3 +1,5 @@
+import classNames from "classnames";
+
 const Button = ({
   children,
   onClick = () => {},
@@ -6,18 +8,23 @@ const Button = ({
   color = "blue",
   textColor = "white",
 }) => {
+  const bg = {
+    red: "bg-red-500 hover:bg-red-600 focus:ring-red-400",
+    blue: "bg-blue-500 hover:bg-blue-600 focus:ring-blue-400",
+    green: "bg-green-500 hover:bg-green-600 focus:ring-green-400",
+  }[color];
+  const buttonClass = classNames(`text-${textColor}`, {
+    [bg]: !disabled,
+    "bg-gray-500 cursor-not-allowed": disabled,
+  });
+
   return (
     <button
       type={type}
-      className={`bg-${color}-500 ${disabled && "bg-gray-500"} ${
-        disabled ? "cursor-not-allowed" : "cursor-pointer"
-      }
-      text-${textColor} font-bold py-2 px-4 rounded 
-      hover:bg-${color}-600 focus:outline-none focus:ring-2 focus:ring-${color}-400 
-      focus:ring-opacity-50 rounded`}
+      className={`${buttonClass} font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-opacity-50`}
       onClick={(e) => {
         e.preventDefault();
-        onClick();
+        if (!disabled) onClick();
       }}
       disabled={disabled}
     >

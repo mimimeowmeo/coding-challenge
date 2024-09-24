@@ -4,13 +4,31 @@ import Input from "./Input";
 import Button from "./Button";
 import Message from "./Message";
 import { MESSAGE_DELAY_CLOSE } from "@/constant/constant";
+import { useSearchParams } from "next/navigation";
 
-const Create = ({ onClose, onSuccess }) => {
-  const [create, setCreate] = useState({ title: "", body: "", userId: "" });
+const Edit = ({ onClose, onSuccess }) => {
+  const [data, setData] = useState({ title: "", body: "", userId: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
   const errorMsg = useRef("");
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
+  useEffect(() => {
+    setData(() => {
+      const title = searchParams.get("title");
+      const body = searchParams.get("body");
+      const userId = searchParams.get("userId");
+      const newData = {
+        ...data,
+        title: title || "",
+        body: body || "",
+        userId: userId || "",
+      };
+      return newData;
+    });
+  }, [id]);
+
   useEffect(() => {
     if (isSuccess) {
       setTimeout(() => {
@@ -24,13 +42,13 @@ const Create = ({ onClose, onSuccess }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "https://jsonplaceholder.typicode.com/posts",
+        `https://jsonplaceholder.typicode.com/posts/${id}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(create),
+          body: JSON.stringify(data),
         }
       );
       if (response.ok) {
@@ -38,7 +56,7 @@ const Create = ({ onClose, onSuccess }) => {
         setIsSuccess(true);
         onSuccess(json);
       } else {
-        throw new Error("Create failed!");
+        throw new Error("Edit failed!");
       }
     } catch (err) {
       setIsError(true);
@@ -46,7 +64,6 @@ const Create = ({ onClose, onSuccess }) => {
       setTimeout(() => {
         setIsError(false);
       }, MESSAGE_DELAY_CLOSE);
-      console.log(err);
     } finally {
       setIsLoading(false);
     }
@@ -57,9 +74,9 @@ const Create = ({ onClose, onSuccess }) => {
         <Modal>
           <Input
             label="Title"
-            value={create.title}
+            value={data.title}
             onChange={(e) =>
-              setCreate((prev) => {
+              setData((prev) => {
                 const newPost = { ...prev, title: e.target.value };
                 return newPost;
               })
@@ -67,29 +84,18 @@ const Create = ({ onClose, onSuccess }) => {
           />
           <Input
             label="Body"
-            value={create.body}
+            value={data.body}
             onChange={(e) =>
-              setCreate((prev) => {
+              setData((prev) => {
                 const newPost = { ...prev, body: e.target.value };
                 return newPost;
               })
             }
           />
-          <Input
-            label="User ID"
-            value={create.userId}
-            onChange={(e) =>
-              setCreate((prev) => {
-                const newPost = { ...prev, userId: e.target.value };
-                return newPost;
-              })
-            }
-          />
+          <Input disabled label="User ID" value={data.userId} />
           <div className="flex justify-end gap-4">
             <Button
-              disabled={
-                !(create.title && create.body && create.userId) || isLoading
-              }
+              disabled={!(data.title && data.body) || isLoading}
               onClick={handleSubmit}
             >
               Submit
@@ -100,10 +106,10 @@ const Create = ({ onClose, onSuccess }) => {
           </div>
         </Modal>
       )}
-      {isSuccess && <Message message="Create Successed!" type="info" />}
+      {isSuccess && <Message message="Edit Successed!" type="info" />}
       {isError && <Message message={errorMsg.current} type="danger" />}
     </>
   );
 };
 
-export default Create;
+export default Edit;

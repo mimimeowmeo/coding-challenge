@@ -46,7 +46,6 @@ const Create = ({ onClose, onSuccess }) => {
       setTimeout(() => {
         setIsError(false);
       }, MESSAGE_DELAY_CLOSE);
-      console.log(err);
     } finally {
       setIsLoading(false);
     }

@@ -3,19 +3,22 @@ import { useEffect, useRef, useState } from "react";
 import Button from "./Button";
 import Create from "./Create";
 import Message from "./Message";
-import { MESSAGE_DELAY_CLOSE } from "@/constant/constant";
+import { MESSAGE_DELAY_CLOSE, PER_PAGE } from "@/constant/constant";
 import Edit from "./Edit";
 import { useRouter } from "next/navigation";
 import Delete from "./Delete";
+import Pagination from "./Pagination";
 
 function Main() {
-  const [data, setData] = useState();
+  const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const errorMsg = useRef("");
   const [showCreate, setShowCreate] = useState(false);
   const [editData, setEditData] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [page, setPage] = useState({ currentPage: 1, totalPages: 1 });
+  const [showData, setShowData] = useState([]);
 
   const router = useRouter();
   useEffect(() => {
@@ -35,6 +38,32 @@ function Main() {
       router.replace(`?${queryParams.toString()}`);
     }
   }, [deleteId]);
+  useEffect(() => {
+    if (data.length) {
+      setPage((prev) => {
+        const length = data.length;
+        const totalPages = Math.ceil(length / PER_PAGE);
+        const newPage = {
+          ...prev,
+          totalPages,
+          currentPage:
+            prev.currentPage > totalPages ? totalPages : prev.currentPage,
+        };
+        return newPage;
+      });
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const currentData = data.slice(
+      PER_PAGE * (page.currentPage - 1),
+      PER_PAGE * page.currentPage
+    );
+    setShowData(currentData);
+  }, [page.currentPage, data]);
+  const onPageChange = (currentPage) => {
+    setPage((prev) => ({ ...prev, currentPage }));
+  };
 
   useEffect(() => {
     const getData = async () => {
@@ -83,8 +112,8 @@ function Main() {
               </tr>
             </thead>
             <tbody>
-              {data &&
-                data.map(({ title, id, userId, body }) => (
+              {showData.length > 0 &&
+                showData.map(({ title, id, userId, body }) => (
                   <tr key={id} className="border-b">
                     <td className="p-4">{id}</td>
                     <td className="p-4">{title}</td>
@@ -115,6 +144,11 @@ function Main() {
                 ))}
             </tbody>
           </table>
+          <Pagination
+            currentPage={page.currentPage}
+            totalPages={page.totalPages}
+            onPageChange={onPageChange}
+          />
           {showCreate && (
             <Create
               onClose={() => setShowCreate(false)}
@@ -146,7 +180,6 @@ function Main() {
               onSuccess={(id) => {
                 setData((prev) => {
                   const newData = [...prev];
-                  console.log(typeof id, id);
                   const index = newData.findIndex((item) => item.id === id);
                   newData.splice(index, 1);
                   return newData;
